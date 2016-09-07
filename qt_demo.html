@@ -1,0 +1,170 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+	<script src="script.js"></script>
+</head>
+<body>
+
+<h1>jQuery Uploads</h1>
+
+<form action="#" enctype="multipart/form-data" method="post">
+	<ul>
+		<li>
+			<label for="name">USERID:</label>
+			<input type="text" name="userid" id="userid">
+		</li>
+
+		<li>
+			<label for="fileToUpload">File:</label>
+			<input type="file" name="fileToUpload" id="fileToUpload">
+		</li>
+
+		<li><input class="button green" type="submit" name="submit" value="Submit Content"></li>
+	</ul>
+</form>
+<div id="timer"></div>
+<div id="loading" style="display:none"><h1>LOADING......</h1></div>
+
+<pre id="results"></pre>
+<script>
+$(function()
+{
+	// Variable to store your files
+	var files;
+
+	// Add events
+	$('input[type=file]').on('change', prepareUpload);
+	$('form').on('submit', uploadFiles);
+
+	// Grab the files and set them to our variable
+	function prepareUpload(event)
+	{
+		files = event.target.files;
+	}
+
+	// Catch the form submit and upload the files
+	function uploadFiles(event)
+	{
+		event.stopPropagation(); // Stop stuff happening
+        event.preventDefault(); // Totally stop stuff happening
+
+        // START A LOADING SPINNER HERE
+
+        // Create a formdata object and add the files
+		var data = new FormData();
+
+		data.append("fileToUpload", files[0]);
+        data.append("userid", $('#userid').val());
+        $('#loading').show();
+        clock();
+        $.ajax({
+            url: 'https://quotetek.com/cgi-bin/parse',
+            type: 'POST',
+            data: data,
+            cache: false,
+            dataType: 'json',
+            processData: false, // Don't process the files
+            contentType: false, // Set content type to false as jQuery will tell the server its a query string request
+            success: function(data, textStatus, jqXHR)
+            {
+            	$('#loading').hide();
+            	$('#results').html();
+            	$('#results').html(data.message);
+            	
+            	if(typeof data.error === 'undefined')
+            	{
+            		// Success so call function to process the form
+            		submitForm(event, data);
+            	}
+            	else
+            	{
+            		// Handle errors here
+            		console.log('ERRORS: ' + data.error);
+            	}
+            },
+            error: function(jqXHR, textStatus, errorThrown)
+            {
+            	// Handle errors here
+            	console.log('ERRORS: ' + textStatus);
+            	// STOP LOADING SPINNER
+            }
+        });
+    }
+
+    function submitForm(event, data)
+	{
+		// Create a jQuery object from the form
+		$form = $(event.target);
+		
+		// Serialize the form data
+		var formData = $form.serialize();
+		
+		// You should sterilise the file names
+		$.each(data.files, function(key, value)
+		{
+			formData = formData + '&fileToUpload=' + value;
+		});
+
+		$.ajax({
+			url: 'submit.php',
+            type: 'POST',
+            data: formData,
+            cache: false,
+            dataType: 'json',
+            success: function(data, textStatus, jqXHR)
+            {
+            	if(typeof data.error === 'undefined')
+            	{
+            		// Success so call function to process the form
+            		console.log('SUCCESS: ' + data.success);
+            	}
+            	else
+            	{
+            		// Handle errors here
+            		console.log('ERRORS: ' + data.error);
+            	}
+            },
+            error: function(jqXHR, textStatus, errorThrown)
+            {
+            	// Handle errors here
+            	console.log('ERRORS: ' + textStatus);
+            },
+            complete: function()
+            {
+            	// STOP LOADING SPINNER
+            }
+		});
+	}
+function clock(){
+	$('#timer').html();
+    $('#timer').html('<div id="clock"><label id="minutes">00</label>:<label id="seconds">00</label></div>');
+         var totalSeconds = 0;
+        setInterval(setTime, 1000);
+        function setTime()
+        {
+            ++totalSeconds;
+            $('#clock > #seconds').html(pad(totalSeconds%60));
+            $('#clock > #minutes').html(pad(parseInt(totalSeconds/60)));
+        }
+        function pad(val)
+        {
+            var valString = val + "";
+            if(valString.length < 2)
+            {
+                return "0" + valString;
+            }
+            else
+            {
+                return valString;
+            }
+        }
+}	
+});
+</script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+Summary: We have Laravel 5 based website. we are using Elasticsearch for some queries.
+We are using MYsql, but plan on using Amazon RDS - Mysql. 
+We use Deploybot.com for the GIT storage files right now. It does have integration with amazon 
+
+We want to start small until next week (100 visitors a day), where we expect 2nd week to have 100,000 visitors a day. 
+
+For Main Instance - 
+Amazon Ec2 instance in an AutoScaling group.
+PHP 7
+need composer installed on server to run migrations and laravel updates.
+
+Modules: 
+OpenSSL PHP Extension
+PDO PHP Extension
+Mbstring PHP Extension
+Tokenizer PHP Extension
+mod-rewrite should be enabled in apache
+
+----------------
+Static files in S3 - 
+Assets, and media 
+
+-----------------
+CDN (Amazon CloudFront)
+CSS files 
+-----------------
+Mysql to Amazon RDS 
+We will be using Amazon RDS to fully scale it. 
+ 
+------------------
+Instance 2 : Elasticsearch
+We already have an Elasticsearch installed. it is just turned off and snapshot of it. 
+your task will be to restore it in amazon. and Update ES if it's an old version 
+- Bind IP and limit IP to the IP for host and mysql server 
+---------------
+
+Whitelisting IPs so network can communicate. 
+We have to whitelist testing server ip, and also Ip of ES server / and main server with each other.
+
+----------------------
